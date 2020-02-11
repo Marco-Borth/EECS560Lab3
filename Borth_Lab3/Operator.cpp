@@ -61,8 +61,8 @@ void Operator::run() {
   LinkedList<User> QuadraticTable;
 
   for (int i = 0; i < hashTableLength; i++) {
-    LinearTable.insert(1, User("\0","\0"));
-    QuadraticTable.insert(1, User("\0","\0"));
+    LinearTable.insert(1, User());
+    QuadraticTable.insert(1, User());
   }
 
   //Open File.
@@ -99,7 +99,9 @@ void Operator::run() {
 
         while(!placedLinear) {
           if (position < LinearTable.getLength()) {
-            if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
+            if(LinearTable.getEntry(index + 1).getUsername() == "\0" &&
+               LinearTable.getEntry(index + 1).getPassword() == "\0" &&
+               LinearTable.getEntry(index + 1).getUsername() != uname) {
               placedLinear = true;
               LinearTable.replace(index + 1, User(uname, pword));
             } else {
@@ -119,7 +121,9 @@ void Operator::run() {
 
         while(!placedQuadratic) {
           if (position < QuadraticTable.getLength()) {
-            if(QuadraticTable.getEntry(index + 1).getUsername() == "\0") {
+            if(QuadraticTable.getEntry(index + 1).getUsername() == "\0" &&
+               QuadraticTable.getEntry(index + 1).getPassword() == "\0" &&
+               QuadraticTable.getEntry(index + 1).getUsername() != uname) {
               placedQuadratic = true;
               QuadraticTable.replace(index + 1, User(uname, pword));
             } else {
@@ -154,7 +158,7 @@ void Operator::run() {
       }
       // Operation Number has been selected.
       else {
-        // 1. AddPlayer - Complete, but prone to input errors!
+        // 1- Add User - Complete!
         if (option == 1) {
           cout << "\nPreparing to Insert a New User...\n";
 
@@ -176,7 +180,7 @@ void Operator::run() {
               parsePassword(pParse);
             } else {
               try {
-                cout << "\nInserting New User into the records...\n\n";
+                cout << "\nDeleting New User into the records...\n\n";
 
                 hashKey = 0;
 
@@ -196,7 +200,9 @@ void Operator::run() {
 
                 while(!placedLinear) {
                   if (position < LinearTable.getLength()) {
-                    if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
+                    if(LinearTable.getEntry(index + 1).getUsername() == "\0" &&
+                       LinearTable.getEntry(index + 1).getPassword() == "\0" &&
+                       LinearTable.getEntry(index + 1).getUsername() != uname) {
                       placedLinear = true;
                       LinearTable.replace(index + 1, User(uname, pword));
                     } else {
@@ -222,7 +228,9 @@ void Operator::run() {
 
                 while(!placedQuadratic) {
                   if (position < QuadraticTable.getLength()) {
-                    if(QuadraticTable.getEntry(index + 1).getUsername() == "\0") {
+                    if(QuadraticTable.getEntry(index + 1).getUsername() == "\0" &&
+                       QuadraticTable.getEntry(index + 1).getPassword() == "\0" &&
+                       QuadraticTable.getEntry(index + 1).getUsername() != uname) {
                       placedQuadratic = true;
                       QuadraticTable.replace(index + 1, User(uname, pword));
                     } else {
@@ -236,7 +244,7 @@ void Operator::run() {
                 }
 
                 cout << "Quadratic Probing:\n";
-                if(placedLinear)
+                if(placedQuadratic)
                   cout << "Record successfully inserted\n\n";
                 else
                   cout << "ERROR! cannot place record\n\n";
@@ -249,49 +257,94 @@ void Operator::run() {
           }
 
         }
-        // 2. RemovePlayer - Complete!
+        // 2- Remove User - Complete!
         else if (option == 2) {
-          cout << "\nPreparing to Delete a Record...\n";
+          cout << "\nPreparing to Delete a New User...\n";
 
-          /*
-          int value;
-          cout << "\nEnter a record with required goals to be removed:\n\n> ";
-          cin >> value;
+          cout << "\nEnter user and password to be removed:\n\n> ";
+          cin >> uParse >> pParse;
+
+          parseUsername(uParse);
+          parsePassword(pParse);
 
           while(1) {
             if(cin.fail()) {
               cin.clear();
               cin.ignore(numeric_limits<streamsize>::max(),'\n');
               cout << "\n\nERROR! Invalid entry!\n\n";
-              cout << "\nEnter a record with required goals to be removed:\n\n> ";
-              cin >> value;
+              cout << "\nEnter user and password to be removed:\n\n> ";
+              cin >> uParse >> pParse;
+
+              parseUsername(uParse);
+              parsePassword(pParse);
             } else {
               try {
-                cout << "\nDeleting any player found with " << value << " goals recorded from this list...\n\n";
+                cout << "\nDeleting Defined User from the records...\n\n";
 
-                bool isFound = false;
-                int index = 0;
-                int position = 0;
+                hashKey = 0;
 
-                for(int i = 0; i < hashTableLength; i++) {
-                  if (hashTable[i].getLength() > 0) {
-                    for (int j = 1; j <= hashTable[i].getLength(); j++) {
-                      if (hashTable[i].getEntry(j).getGoalRecord() == value) {
-                        index = i;
-                        position = j;
-                        isFound = true;
-                      }
-                    }
+                for (int i = 0; i < pword.length(); i++) {
+                  char ascii = pword.at(i);
+
+                  if (int (ascii) >= 48 && int (ascii) <= 57) {
+                    hashKey = hashKey + ( (int (ascii) + 2) % 10 );
+                  } else {
+                    hashKey = hashKey + ascii;
                   }
                 }
 
-                if(!isFound)
-                  cout << "ERROR! No Record Found.\n\n";
-                else {
-                  hashTable[index].remove(position);
+                bool placedLinear = false;
+                int index = hashKey % hashTableLength;
+                int position = 0;
 
-                  cout << "Player Record was successfully inserted.\n\n";
+                while(!placedLinear) {
+                  if (position < LinearTable.getLength()) {
+                    if(LinearTable.getEntry(index + 1).getUsername() == uname &&
+                       LinearTable.getEntry(index + 1).getPassword() == pword) {
+                      placedLinear = true;
+                      LinearTable.replace(index + 1, User());
+                    } else {
+                      index++;
+                      position++;
+                      index = index % hashTableLength;
+                    }
+                  } else {
+                    break;
+                  }
                 }
+
+                cout << "Linear Probing:\n";
+                if(placedLinear)
+                  cout << "Record successfully removed\n\n";
+                else
+                  cout << "ERROR! cannot remove record\n\n";
+
+                bool placedQuadratic = false;
+                index = hashKey % hashTableLength;
+                position = 0;
+                int exponent = position;
+
+                while(!placedQuadratic) {
+                  if (position < QuadraticTable.getLength()) {
+                    if(QuadraticTable.getEntry(index + 1).getUsername() == uname &&
+                       QuadraticTable.getEntry(index + 1).getPassword() == pword) {
+                      placedQuadratic = true;
+                      QuadraticTable.replace(index + 1, User());
+                    } else {
+                      position++;
+                      exponent = position^2;
+                      index = ( (index % hashTableLength) + exponent ) % hashTableLength;
+                    }
+                  } else {
+                    break;
+                  }
+                }
+
+                cout << "Quadratic Probing:\n";
+                if(placedQuadratic)
+                  cout << "Record successfully removed\n\n";
+                else
+                  cout << "ERROR! cannot remove record\n\n";
               } catch (runtime_error) {
                 cout << "\nERROR! Invalid Position!\n\n";
               }
@@ -299,7 +352,6 @@ void Operator::run() {
               break;
             }
           }
-          */
         }
         // 5- Print Users - Complete!
         else if (option == 5) {

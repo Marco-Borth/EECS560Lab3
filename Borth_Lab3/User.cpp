@@ -12,7 +12,10 @@
 #include <string>
 using namespace std;
 
-User::User(){}
+User::User(){
+  Username = "\0";
+  password = "\0";
+}
 
 User::~User(){}
 
