@@ -34,6 +34,24 @@ void Operator::printCommands() {
   cout << "6- Exit\n\n> ";
 }
 
+void Operator::parseUsername(string parse) {
+  uname = "\0";
+
+  for (int i = 0; i < parse.length(); i++) {
+    if(parse.at(i) != ':' && parse.at(i) != ' ' && parse.at(i) != ',')
+    uname = uname + parse.at(i);
+  }
+}
+
+void Operator::parsePassword(string parse) {
+  pword = "\0";
+
+  for (int i = 0; i < parse.length(); i++) {
+    if(parse.at(i) != ':' && parse.at(i) != ' ' && parse.at(i) != ',')
+    pword = pword + parse.at(i);
+  }
+}
+
 void Operator::run() {
   cout << "\nWelcome to the Interactive Hash Table Program!\n\n";
   ifstream inFile;
@@ -56,19 +74,8 @@ void Operator::run() {
     while (!inFile.eof( )) {
       inFile >> uParse >> pParse;
 
-      uname = "\0";
-
-      for (int i = 0; i < uParse.length(); i++) {
-        if(uParse.at(i) != ':' && uParse.at(i) != ' ' && uParse.at(i) != ',')
-        uname = uname + uParse.at(i);
-      }
-
-      pword = "\0";
-
-      for (int i = 0; i < pParse.length(); i++) {
-        if(pParse.at(i) != ':' && pParse.at(i) != ' ' && pParse.at(i) != ',')
-        pword = pword + pParse.at(i);
-      }
+      parseUsername(uParse);
+      parsePassword(pParse);
 
       if(inFile.fail()) {
         inFile.clear();
@@ -88,20 +95,26 @@ void Operator::run() {
 
         bool placedLinear = false;
         int index = hashKey % hashTableLength;
+        int position = 0;
 
         while(!placedLinear) {
-          if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
-            placedLinear = true;
-            LinearTable.replace(index + 1, User(uname, pword));
+          if (position < LinearTable.getLength()) {
+            if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
+              placedLinear = true;
+              LinearTable.replace(index + 1, User(uname, pword));
+            } else {
+              index++;
+              position++;
+              index = index % hashTableLength;
+            }
           } else {
-            index++;
-            index = index % hashTableLength;
+            break;
           }
         }
 
         bool placedQuadratic = false;
         index = hashKey % hashTableLength;
-        int position = 0;
+        position = 0;
         int exponent = position;
 
         while(!placedQuadratic) {
@@ -111,8 +124,8 @@ void Operator::run() {
               QuadraticTable.replace(index + 1, User(uname, pword));
             } else {
               position++;
-              exponent = position * position;
-              index = ( index + exponent ) % hashTableLength;
+              exponent = position^2;
+              index = ( (index % hashTableLength) + exponent ) % hashTableLength;
             }
           } else {
             break;
@@ -143,69 +156,90 @@ void Operator::run() {
       else {
         // 1. AddPlayer - Complete, but prone to input errors!
         if (option == 1) {
-          cout << "\nPreparing to Insert a New Record...\n";
+          cout << "\nPreparing to Insert a New User...\n";
 
-          /*
-          cout << "\nEnter the record to be inserted:\n\n> ";
-          cin >> srtInput;
+          cout << "\nEnter user details to be added:\n\n> ";
+          cin >> uParse >> pParse;
 
-          string strParser = "\0";
-
-          for (int i = 0; i < srtInput.length(); i++) {
-            if(srtInput.at(i) != ':')
-            strParser = strParser + srtInput.at(i);
-          }
-
-          playerName = strParser;
-          strParser = "\0";
-
-          cin >> playerGoalRecord;
+          parseUsername(uParse);
+          parsePassword(pParse);
 
           while(1) {
             if(cin.fail()) {
               cin.clear();
               cin.ignore(numeric_limits<streamsize>::max(),'\n');
               cout << "\n\nERROR! Invalid entry!\n\n";
-              cout << "\nEnter the record to be inserted:\n\n> ";
-              cin >> srtInput;
+              cout << "\nEnter user details to be added:\n\n> ";
+              cin >> uParse >> pParse;
 
-              string strParser = "\0";
-
-              for (int i = 0; i < srtInput.length(); i++) {
-                if(srtInput.at(i) != ':')
-                strParser = strParser + srtInput.at(i);
-              }
-
-              playerName = strParser;
-              strParser = "\0";
-
-              cin >> playerGoalRecord;
+              parseUsername(uParse);
+              parsePassword(pParse);
             } else {
               try {
-                cout << "\nInserting " << playerName << " into the records...\n";
+                cout << "\nInserting New User into the records...\n\n";
 
-                bool isFound = false;
+                hashKey = 0;
 
-                for(int i = 0; i < hashTableLength; i++) {
-                  if (hashTable[i].getLength() > 0) {
-                    for (int j = 1; j <= hashTable[i].getLength(); j++) {
-                      if (hashTable[i].getEntry(j).getName() == playerName && hashTable[i].getEntry(j).getGoalRecord() == playerGoalRecord) {
-                        isFound = true;
-                      }
-                    }
+                for (int i = 0; i < pword.length(); i++) {
+                  char ascii = pword.at(i);
+
+                  if (int (ascii) >= 48 && int (ascii) <= 57) {
+                    hashKey = hashKey + ( (int (ascii) + 2) % 10 );
+                  } else {
+                    hashKey = hashKey + ascii;
                   }
                 }
 
-                if(isFound)
-                  cout << "ERROR! Duplicate Entry Found. Player Record was not successfully inserted.\n\n";
-                else {
-                  int index = 0;
-                  index = playerGoalRecord % hashTableLength;
+                bool placedLinear = false;
+                int index = hashKey % hashTableLength;
+                int position = 0;
 
-                  hashTable[index].insert(hashTable[index].getLength() + 1, Player(playerName, playerGoalRecord));
-
-                  cout << "Player Record was successfully inserted.\n\n";
+                while(!placedLinear) {
+                  if (position < LinearTable.getLength()) {
+                    if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
+                      placedLinear = true;
+                      LinearTable.replace(index + 1, User(uname, pword));
+                    } else {
+                      index++;
+                      position++;
+                      index = index % hashTableLength;
+                    }
+                  } else {
+                    break;
+                  }
                 }
+
+                cout << "Linear Probing:\n";
+                if(placedLinear)
+                  cout << "Record successfully inserted\n\n";
+                else
+                  cout << "ERROR! cannot place record\n\n";
+
+                bool placedQuadratic = false;
+                index = hashKey % hashTableLength;
+                position = 0;
+                int exponent = position;
+
+                while(!placedQuadratic) {
+                  if (position < QuadraticTable.getLength()) {
+                    if(QuadraticTable.getEntry(index + 1).getUsername() == "\0") {
+                      placedQuadratic = true;
+                      QuadraticTable.replace(index + 1, User(uname, pword));
+                    } else {
+                      position++;
+                      exponent = position^2;
+                      index = ( (index % hashTableLength) + exponent ) % hashTableLength;
+                    }
+                  } else {
+                    break;
+                  }
+                }
+
+                cout << "Quadratic Probing:\n";
+                if(placedLinear)
+                  cout << "Record successfully inserted\n\n";
+                else
+                  cout << "ERROR! cannot place record\n\n";
               } catch (runtime_error) {
                 cout << "\nERROR! Invalid Position!\n\n";
               }
@@ -213,7 +247,7 @@ void Operator::run() {
               break;
             }
           }
-          */
+
         }
         // 2. RemovePlayer - Complete!
         else if (option == 2) {
@@ -311,6 +345,7 @@ void Operator::run() {
     }
   } while(option != 6);
   LinearTable.~LinkedList();
+  QuadraticTable.~LinkedList();
 
   uParse = "\0";
   pParse = "\0";

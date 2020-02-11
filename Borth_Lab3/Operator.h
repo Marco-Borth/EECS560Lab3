@@ -42,6 +42,10 @@ public:
 */
   void printCommands();
 
+  void parseUsername(string parse);
+
+  void parsePassword(string parse);
+
 /*
 * @pre filename is a string.
 * @post Operator object is constructed, file == filename.
