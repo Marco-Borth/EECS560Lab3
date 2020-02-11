@@ -39,11 +39,11 @@ void Operator::run() {
   ifstream inFile;
   hashTableLength = 11;
 
-  LinkedList<User> linearTable;
+  LinkedList<User> LinearTable;
   LinkedList<User> QuadraticTable;
 
   for (int i = 0; i < hashTableLength; i++) {
-    linearTable.insert(1, User("\0","\0"));
+    LinearTable.insert(1, User("\0","\0"));
     QuadraticTable.insert(1, User("\0","\0"));
   }
 
@@ -75,7 +75,7 @@ void Operator::run() {
         inFile.ignore(numeric_limits<streamsize>::max(),'\n');
       } else {
         hashKey = 0;
-        
+
         for (int i = 0; i < pword.length(); i++) {
           char ascii = pword.at(i);
 
@@ -90,14 +90,35 @@ void Operator::run() {
         int index = hashKey % hashTableLength;
 
         while(!placedLinear) {
-          if(linearTable.getEntry(index + 1).getUsername() == "\0") {
+          if(LinearTable.getEntry(index + 1).getUsername() == "\0") {
             placedLinear = true;
-            linearTable.replace(index + 1, User(uname, pword));
+            LinearTable.replace(index + 1, User(uname, pword));
           } else {
             index++;
             index = index % hashTableLength;
           }
         }
+
+        bool placedQuadratic = false;
+        index = hashKey % hashTableLength;
+        int position = 0;
+        int exponent = position;
+
+        while(!placedQuadratic) {
+          if (position < QuadraticTable.getLength()) {
+            if(QuadraticTable.getEntry(index + 1).getUsername() == "\0") {
+              placedQuadratic = true;
+              QuadraticTable.replace(index + 1, User(uname, pword));
+            } else {
+              position++;
+              exponent = position * position;
+              index = ( index + exponent ) % hashTableLength;
+            }
+          } else {
+            break;
+          }
+        }
+
       }
     }
   }
@@ -248,13 +269,27 @@ void Operator::run() {
         }
         // 5- Print Users - Complete!
         else if (option == 5) {
-          cout << "\nPrinting List of Players...\n\n";
+          cout << "\nPrinting List of Users...\n\n";
 
-          for(int i = 0; i < linearTable.getLength(); i++) {
+          cout << "Linear Probing:\n";
+          for(int i = 0; i < LinearTable.getLength(); i++) {
             cout << i << ":";
             try {
-              if (linearTable.getEntry(i + 1).getUsername() != "\0")
-                cout << " " << linearTable.getEntry(i + 1).getUsername() << ": " << linearTable.getEntry(i + 1).getPassword();
+              if (LinearTable.getEntry(i + 1).getUsername() != "\0")
+                cout << " " << LinearTable.getEntry(i + 1).getUsername() << ": " << LinearTable.getEntry(i + 1).getPassword();
+            } catch (runtime_error) {
+              cout << "\nERROR! Invalid Position!\n\n";
+            }
+            cout << "\n";
+          }
+          cout << "\n";
+
+          cout << "Quadratic Probing:\n";
+          for(int i = 0; i < QuadraticTable.getLength(); i++) {
+            cout << i << ":";
+            try {
+              if (QuadraticTable.getEntry(i + 1).getUsername() != "\0")
+                cout << " " << QuadraticTable.getEntry(i + 1).getUsername() << ": " << QuadraticTable.getEntry(i + 1).getPassword();
             } catch (runtime_error) {
               cout << "\nERROR! Invalid Position!\n\n";
             }
@@ -275,9 +310,7 @@ void Operator::run() {
       }
     }
   } while(option != 6);
-
-  //for (int i = 0; i < hashTableLength; i++)
-    //linearTable[i].~User();
+  LinearTable.~LinkedList();
 
   uParse = "\0";
   pParse = "\0";
