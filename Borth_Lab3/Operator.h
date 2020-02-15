@@ -2,9 +2,9 @@
  *
  * File Name:  Operator.h
  * Author: Marco Borth
- * Assignment:   EECS-560 Lab 2 - Implementation of Hash Table
+ * Assignment:   EECS-560 Lab 3 - Implementation of Hash Table (Closed Hashing)
  * Description:  Operator Class is defined.
- * Date: 2/4/20
+ * Date: 2/11/20
  *
  ---------------------------------------------------------------------------- */
 
@@ -22,12 +22,20 @@ class Operator
 private:
   int option;
   int hashTableLength;
+  int hashValue;
+
   string file;
+
   string uname;
   string pword;
-  int hashKey;
   string uParse;
   string pParse;
+
+  bool placedLinear;
+  bool placedQuadratic;
+
+  LinkedList<User> LinearTable;
+  LinkedList<User> QuadraticTable;
 
 public:
 /**
@@ -45,6 +53,10 @@ public:
   void parseUsername(string parse);
 
   void parsePassword(string parse);
+
+  int hashKey(string passkey);
+
+  void insertRecord(string table);
 
 /*
 * @pre filename is a string.
