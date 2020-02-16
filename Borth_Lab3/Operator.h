@@ -22,6 +22,7 @@ class Operator
 private:
   int option;
   int hashTableLength;
+  int hashTableLoadFactor;
   int hashValue;
 
   string file;
@@ -55,6 +56,8 @@ public:
   void parsePassword(string parse);
 
   int hashKey(string passkey);
+
+  void rehashTables();
 
   void insertRecord(string table);
 

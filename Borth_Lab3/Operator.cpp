@@ -40,8 +40,10 @@ void Operator::parseUsername(string parse) {
   uname = "\0";
 
   for (int i = 0; i < parse.length(); i++) {
-    if(parse.at(i) != ':' && parse.at(i) != ' ' && parse.at(i) != ',')
-    uname = uname + parse.at(i);
+    char ascii = parse.at(i);
+
+    if (int (ascii) >= 97 && int (ascii) <= 122)
+      uname = uname + parse.at(i);
   }
 }
 
@@ -49,8 +51,10 @@ void Operator::parsePassword(string parse) {
   pword = "\0";
 
   for (int i = 0; i < parse.length(); i++) {
-    if(parse.at(i) != ':' && parse.at(i) != ' ' && parse.at(i) != ',')
-    pword = pword + parse.at(i);
+    char ascii = parse.at(i);
+
+    if ( (int (ascii) >= 48 && int (ascii) <= 57) || (int (ascii) >= 65 && int (ascii) <= 90) || (int (ascii) >= 97 && int (ascii) <= 122) )
+      pword = pword + parse.at(i);
   }
 }
 
@@ -68,6 +72,60 @@ int Operator::hashKey(string passkey) {
   }
 
   return key;
+}
+
+void Operator::rehashTables() {
+  LinkedList<User> tempLinear;
+  LinkedList<User> tempQuadratic;
+
+  while (tempLinear.getLength() < hashTableLength || tempQuadratic.getLength() < hashTableLength) {
+    tempLinear.insert(1, User());
+    tempQuadratic.insert(1, User());
+  }
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    tempLinear.replace(i, LinearTable.getEntry(i));
+    LinearTable.replace(i, User());
+    tempQuadratic.replace(i, QuadraticTable.getEntry(i));
+    QuadraticTable.replace(i, User());
+  }
+
+  int tempHashTableLength = hashTableLength;
+  hashTableLength = hashTableLength * 2;
+  int index = 2;
+
+  while (index < hashTableLength) {
+    if(hashTableLength % index == 0) {
+      hashTableLength++;
+      index = 1;
+    }
+    index++;
+  }
+
+  hashTableLoadFactor = hashTableLength / 2;
+  if (hashTableLength % 2 == 1)
+    hashTableLoadFactor++;
+
+  while (LinearTable.getLength() < hashTableLength || QuadraticTable.getLength() < hashTableLength) {
+    LinearTable.insert(1, User());
+    QuadraticTable.insert(1, User());
+  }
+
+  for (int i = 1; i <= tempHashTableLength; i++) {
+    uname = tempLinear.getEntry(i).getUsername();
+    pword = tempLinear.getEntry(i).getPassword();
+
+    if(tempLinear.getEntry(i).getUsername() != "\0" && tempLinear.getEntry(i).getPassword() != "\0")
+      insertRecord("LinearTable");
+  }
+
+  for (int i = 1; i <= tempHashTableLength; i++) {
+    uname = tempQuadratic.getEntry(i).getUsername();
+    pword = tempQuadratic.getEntry(i).getPassword();
+
+    if(tempQuadratic.getEntry(i).getUsername() != "\0" && tempQuadratic.getEntry(i).getPassword() != "\0")
+      insertRecord("QuadraticTable");
+  }
 }
 
 void Operator::insertRecord(string table) {
@@ -115,8 +173,11 @@ void Operator::run() {
   cout << "\nWelcome to the Interactive Hash Table Program!\n\n";
   ifstream inFile;
   hashTableLength = 11;
+  hashTableLoadFactor = hashTableLength / 2;
+  if (hashTableLength % 2 == 1)
+    hashTableLoadFactor++;
 
-  for (int i = 0; i < hashTableLength; i++) {
+  while (LinearTable.getLength() < hashTableLength || QuadraticTable.getLength() < hashTableLength) {
     LinearTable.insert(1, User());
     QuadraticTable.insert(1, User());
   }
@@ -139,6 +200,26 @@ void Operator::run() {
       } else {
         insertRecord("LinearTable");
         insertRecord("QuadraticTable");
+
+        int linearNumOfRecords = 0;
+
+        for (int i = 1; i <= hashTableLength; i++) {
+          if(LinearTable.getEntry(i).getUsername() != "\0" && LinearTable.getEntry(i).getPassword() != "\0")
+            linearNumOfRecords++;
+        }
+
+        if (linearNumOfRecords > hashTableLoadFactor)
+          rehashTables();
+
+        int quadraticNumOfRecords = 0;
+
+        for (int i = 1; i <= hashTableLength; i++) {
+          if(QuadraticTable.getEntry(i).getUsername() != "\0" && QuadraticTable.getEntry(i).getPassword() != "\0")
+            quadraticNumOfRecords++;
+        }
+
+        if (quadraticNumOfRecords > hashTableLoadFactor)
+          rehashTables();
       }
     }
   }
