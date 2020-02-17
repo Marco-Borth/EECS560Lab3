@@ -35,8 +35,13 @@ private:
   bool placedLinear;
   bool placedQuadratic;
 
-  LinkedList<User> LinearTable;
-  LinkedList<User> QuadraticTable;
+  LinkedList<User*> LinearTable;
+  LinkedList<User*> QuadraticTable;
+
+  LinkedList<User*> tempLinear;
+  LinkedList<User*> tempQuadratic;
+
+  User* newUser;
 
 public:
 /**

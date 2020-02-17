@@ -48,15 +48,11 @@ public:
 */
   string getPassword() const;
 
-  bool operator==(const User& other);
-
-  bool operator>(const User& other);
-
-  bool operator<(const User& other);
-
   User();
 
   ~User();
+
+  User(const User &other);
 
   User(string alias, string pword);
 };

@@ -12,9 +12,14 @@
 #include <string>
 using namespace std;
 
-User::User(){
+User::User() {
   Username = "\0";
   password = "\0";
+}
+
+User::User(const User &other) {
+  Username = other.getUsername();
+  password = other.getPassword();
 }
 
 User::~User(){}
@@ -25,9 +30,7 @@ User::User(string alias, string pword) {
 }
 
 void User::setUsername(string alias) {
-  if(alias.length() > 0) {
-    Username = alias;
-  }
+  Username = alias;
 }
 
 string User::getUsername() const {
@@ -35,26 +38,9 @@ string User::getUsername() const {
 }
 
 void User::setPassword(string pword) {
-  if(pword.length() > 0) {
-    password = pword;
-  }
+  password = pword;
 }
 
 string User::getPassword() const {
   return(password);
-}
-
-bool User::operator==(const User& other)
-{
-  return(Username == other.getUsername());
-}
-
-bool User::operator>(const User& other)
-{
-  return(Username > other.getUsername());
-}
-
-bool User::operator<(const User& other)
-{
-  return(Username < other.getUsername());
 }

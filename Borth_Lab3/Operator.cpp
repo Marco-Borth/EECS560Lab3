@@ -108,22 +108,27 @@ int Operator::hashKey(string passkey) {
 }
 
 void Operator::rehashTables() {
-  LinkedList<User> tempLinear;
-  LinkedList<User> tempQuadratic;
-
-  while (tempLinear.getLength() < hashTableLength || tempQuadratic.getLength() < hashTableLength) {
-    tempLinear.insert(1, User());
-    tempQuadratic.insert(1, User());
-  }
-
   for (int i = 1; i <= hashTableLength; i++) {
-    tempLinear.replace(i, LinearTable.getEntry(i));
-    LinearTable.replace(i, User());
-    tempQuadratic.replace(i, QuadraticTable.getEntry(i));
-    QuadraticTable.replace(i, User());
+    if(LinearTable.getEntry(i)->getUsername() != "\0" && LinearTable.getEntry(i)->getPassword() != "\0") {
+      //tempLinear.replace(i, LinearTable.getEntry(i));
+      tempLinear.getEntry(i)->setUsername(LinearTable.getEntry(i)->getUsername());
+      tempLinear.getEntry(i)->setPassword(LinearTable.getEntry(i)->getPassword());
+      //LinearTable.replace(i, User());
+      LinearTable.getEntry(i)->setUsername("\0");
+      LinearTable.getEntry(i)->setPassword("\0");
+    }
+
+    if(QuadraticTable.getEntry(i)->getUsername() != "\0" && QuadraticTable.getEntry(i)->getPassword() != "\0") {
+      //tempQuadratic.replace(i, QuadraticTable.getEntry(i));
+      tempQuadratic.getEntry(i)->setUsername(QuadraticTable.getEntry(i)->getUsername());
+      tempQuadratic.getEntry(i)->setPassword(QuadraticTable.getEntry(i)->getPassword());
+      //QuadraticTable.replace(i, User());
+      QuadraticTable.getEntry(i)->setUsername("\0");
+      QuadraticTable.getEntry(i)->setPassword("\0");
+    }
   }
 
-  int tempHashTableLength = hashTableLength;
+  //int tempHashTableLength = hashTableLength;
   hashTableLength = hashTableLength * 2;
   int index = 2;
 
@@ -139,25 +144,54 @@ void Operator::rehashTables() {
   if (hashTableLength % 2 == 1)
     hashTableLoadFactor++;
 
-  while (LinearTable.getLength() < hashTableLength || QuadraticTable.getLength() < hashTableLength) {
-    LinearTable.insert(1, User());
-    QuadraticTable.insert(1, User());
+  while (LinearTable.getLength() < hashTableLength) {
+    newUser = new User();
+    LinearTable.insert(LinearTable.getLength() + 1, newUser);
   }
 
-  for (int i = 1; i <= tempHashTableLength; i++) {
-    uname = tempLinear.getEntry(i).getUsername();
-    pword = tempLinear.getEntry(i).getPassword();
+  while (tempLinear.getLength() < hashTableLength) {
+    newUser = new User();
+    tempLinear.insert(tempLinear.getLength() + 1, newUser);
+  }
 
-    if(tempLinear.getEntry(i).getUsername() != "\0" && tempLinear.getEntry(i).getPassword() != "\0")
+  while (QuadraticTable.getLength() < hashTableLength) {
+    newUser = new User();
+    QuadraticTable.insert(QuadraticTable.getLength() + 1, newUser);
+  }
+
+  while (tempQuadratic.getLength() < hashTableLength) {
+    newUser = new User();
+    tempQuadratic.insert(tempQuadratic.getLength() + 1, newUser);
+  }
+
+  for (int i = 1; i <= tempLinear.getLength(); i++) {
+    if(tempLinear.getEntry(i)->getUsername() != "\0" && tempLinear.getEntry(i)->getPassword() != "\0") {
+      uname = tempLinear.getEntry(i)->getUsername();
+      pword = tempLinear.getEntry(i)->getPassword();
       insertRecord("LinearTable");
+    }
   }
 
-  for (int i = 1; i <= tempHashTableLength; i++) {
-    uname = tempQuadratic.getEntry(i).getUsername();
-    pword = tempQuadratic.getEntry(i).getPassword();
-
-    if(tempQuadratic.getEntry(i).getUsername() != "\0" && tempQuadratic.getEntry(i).getPassword() != "\0")
+  for (int i = 1; i <= tempQuadratic.getLength(); i++) {
+    if(tempQuadratic.getEntry(i)->getUsername() != "\0" && tempQuadratic.getEntry(i)->getPassword() != "\0") {
+      uname = tempQuadratic.getEntry(i)->getUsername();
+      pword = tempQuadratic.getEntry(i)->getPassword();
       insertRecord("QuadraticTable");
+    }
+  }
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    if(tempLinear.getEntry(i)->getUsername() != "\0" && tempLinear.getEntry(i)->getPassword() != "\0") {
+      //LinearTable.replace(i, User());
+      tempLinear.getEntry(i)->setUsername("\0");
+      tempLinear.getEntry(i)->setPassword("\0");
+    }
+
+    if(tempQuadratic.getEntry(i)->getUsername() != "\0" && tempQuadratic.getEntry(i)->getPassword() != "\0") {
+      //QuadraticTable.replace(i, User());
+      tempQuadratic.getEntry(i)->setUsername("\0");
+      tempQuadratic.getEntry(i)->setPassword("\0");
+    }
   }
 }
 
@@ -170,15 +204,19 @@ void Operator::insertRecord(string table) {
     placedLinear = false;
 
     for (int i = 1; i <= LinearTable.getLength(); i++) {
-      if (LinearTable.getEntry(i).getUsername() == uname) {
+      if (LinearTable.getEntry(i)->getUsername() == uname) {
         throw(runtime_error("ERROR! Username Already Exists.\n"));
       }
     }
 
     while(!placedLinear && position < LinearTable.getLength()) {
-      if(LinearTable.getEntry(index + 1).getUsername() == "\0" && LinearTable.getEntry(index + 1).getPassword() == "\0") {
+      if(LinearTable.getEntry(index + 1)->getUsername() == "\0" && LinearTable.getEntry(index + 1)->getPassword() == "\0") {
         placedLinear = true;
-        LinearTable.replace(index + 1, User(uname, pword));
+        LinearTable.getEntry(index + 1)->setUsername(uname);
+        LinearTable.getEntry(index + 1)->setPassword(pword);
+        //tempLinear.getEntry(index + 1)->setUsername(uname);
+        //tempLinear.getEntry(index + 1)->setPassword(pword);
+        //replace(index + 1, User(uname, pword));
       } else {
         index++;
         position++;
@@ -190,15 +228,19 @@ void Operator::insertRecord(string table) {
     int exponent = position;
 
     for (int i = 1; i <= QuadraticTable.getLength(); i++) {
-      if (QuadraticTable.getEntry(i).getUsername() == uname) {
+      if (QuadraticTable.getEntry(i)->getUsername() == uname) {
         throw(runtime_error("ERROR! Username Already Exists.\n"));
       }
     }
 
     while(!placedQuadratic && position < QuadraticTable.getLength()) {
-      if(QuadraticTable.getEntry(index + 1).getUsername() == "\0" && QuadraticTable.getEntry(index + 1).getPassword() == "\0") {
+      if(QuadraticTable.getEntry(index + 1)->getUsername() == "\0" && QuadraticTable.getEntry(index + 1)->getPassword() == "\0") {
         placedQuadratic = true;
-        QuadraticTable.replace(index + 1, User(uname, pword));
+        QuadraticTable.getEntry(index + 1)->setUsername(uname);
+        QuadraticTable.getEntry(index + 1)->setPassword(pword);
+        //tempQuadratic.getEntry(index + 1)->setUsername(uname);
+        //tempQuadratic.getEntry(index + 1)->setPassword(pword);
+        //replace(index + 1, User(uname, pword));
       } else {
         position++;
         exponent = position^2;
@@ -219,10 +261,12 @@ void Operator::removeRecord(string table) {
     placedLinear = false;
 
     while(!placedLinear && position < LinearTable.getLength()) {
-      if(LinearTable.getEntry(index + 1).getUsername() == uname &&
-         LinearTable.getEntry(index + 1).getPassword() == pword) {
+      if(LinearTable.getEntry(index + 1)->getUsername() == uname && LinearTable.getEntry(index + 1)->getPassword() == pword) {
         placedLinear = true;
-        LinearTable.replace(index + 1, User());
+        LinearTable.getEntry(index + 1)->setUsername("\0");
+        LinearTable.getEntry(index + 1)->setPassword("\0");
+        //newUser = new User();
+        //LinearTable.replace(index + 1, newUser);
       } else {
         index++;
         position++;
@@ -234,10 +278,12 @@ void Operator::removeRecord(string table) {
     int exponent = position;
 
     while(!placedQuadratic && position < QuadraticTable.getLength()) {
-      if(QuadraticTable.getEntry(index + 1).getUsername() == uname &&
-         QuadraticTable.getEntry(index + 1).getPassword() == pword) {
+      if(QuadraticTable.getEntry(index + 1)->getUsername() == uname && QuadraticTable.getEntry(index + 1)->getPassword() == pword) {
         placedQuadratic = true;
-        QuadraticTable.replace(index + 1, User());
+        QuadraticTable.getEntry(index + 1)->setUsername("\0");
+        QuadraticTable.getEntry(index + 1)->setPassword("\0");
+        //newUser = new User();
+        //QuadraticTable.replace(index + 1, newUser);
       } else {
         position++;
         exponent = position^2;
@@ -257,9 +303,24 @@ void Operator::run() {
   if (hashTableLength % 2 == 1)
     hashTableLoadFactor++;
 
-  while (LinearTable.getLength() < hashTableLength || QuadraticTable.getLength() < hashTableLength) {
-    LinearTable.insert(1, User());
-    QuadraticTable.insert(1, User());
+  while (LinearTable.getLength() < hashTableLength) {
+    newUser = new User();
+    LinearTable.insert(LinearTable.getLength() + 1, newUser);
+  }
+
+  while (tempLinear.getLength() < hashTableLength) {
+    newUser = new User();
+    tempLinear.insert(tempLinear.getLength() + 1, newUser);
+  }
+
+  while (QuadraticTable.getLength() < hashTableLength) {
+    newUser = new User();
+    QuadraticTable.insert(QuadraticTable.getLength() + 1, newUser);
+  }
+
+  while (tempQuadratic.getLength() < hashTableLength) {
+    newUser = new User();
+    tempQuadratic.insert(tempQuadratic.getLength() + 1, newUser);
   }
 
   //Open File.
@@ -314,7 +375,7 @@ void Operator::run() {
         int linearNumOfRecords = 0;
 
         for (int i = 1; i <= hashTableLength; i++) {
-          if(LinearTable.getEntry(i).getUsername() != "\0" && LinearTable.getEntry(i).getPassword() != "\0")
+          if(LinearTable.getEntry(i)->getUsername() != "\0" && LinearTable.getEntry(i)->getPassword() != "\0")
             linearNumOfRecords++;
         }
 
@@ -347,7 +408,7 @@ void Operator::run() {
         int quadraticNumOfRecords = 0;
 
         for (int i = 1; i <= hashTableLength; i++) {
-          if(QuadraticTable.getEntry(i).getUsername() != "\0" && QuadraticTable.getEntry(i).getPassword() != "\0")
+          if(QuadraticTable.getEntry(i)->getUsername() != "\0" && QuadraticTable.getEntry(i)->getPassword() != "\0")
             quadraticNumOfRecords++;
         }
 
@@ -375,14 +436,15 @@ void Operator::run() {
             }
           }
         }
+
       }
-
-      if(UsernameInputFailures > 0)
-        cout << "ERROR! Invalid Input for Usernames Detected: " << UsernameInputFailures << "\n";
-
-      if(PasswordInputFailures > 0)
-        cout << "ERROR! Invalid Input for Passwords Detected: " << PasswordInputFailures << "\n";
     }
+
+    if(UsernameInputFailures > 0)
+      cout << "ERROR! Invalid Input for Usernames Detected: " << UsernameInputFailures << "\n";
+
+    if(PasswordInputFailures > 0)
+      cout << "ERROR! Invalid Input for Passwords Detected: " << PasswordInputFailures << "\n";
   }
 
   // Close File.
@@ -476,7 +538,7 @@ void Operator::run() {
                 int linearNumOfRecords = 0;
 
                 for (int i = 1; i <= hashTableLength; i++) {
-                  if(LinearTable.getEntry(i).getUsername() != "\0" && LinearTable.getEntry(i).getPassword() != "\0")
+                  if(LinearTable.getEntry(i)->getUsername() != "\0" && LinearTable.getEntry(i)->getPassword() != "\0")
                     linearNumOfRecords++;
                 }
 
@@ -508,7 +570,7 @@ void Operator::run() {
                 int quadraticNumOfRecords = 0;
 
                 for (int i = 1; i <= hashTableLength; i++) {
-                  if(QuadraticTable.getEntry(i).getUsername() != "\0" && QuadraticTable.getEntry(i).getPassword() != "\0")
+                  if(QuadraticTable.getEntry(i)->getUsername() != "\0" && QuadraticTable.getEntry(i)->getPassword() != "\0")
                     quadraticNumOfRecords++;
                 }
 
@@ -595,10 +657,13 @@ void Operator::run() {
                   int position = 0;
 
                   while(!placedLinear && position < LinearTable.getLength()) {
-                    if(LinearTable.getEntry(index + 1).getUsername() == uname &&
-                       LinearTable.getEntry(index + 1).getPassword() == pword) {
+                    if(LinearTable.getEntry(index + 1)->getUsername() == uname &&
+                       LinearTable.getEntry(index + 1)->getPassword() == pword) {
                       placedLinear = true;
-                      LinearTable.replace(index + 1, User());
+                      LinearTable.getEntry(index + 1)->setUsername("\0");
+                      LinearTable.getEntry(index + 1)->setPassword("\0");
+                      //newUser = new User();
+                      //LinearTable.replace(index + 1, newUser);
                     } else {
                       index++;
                       position++;
@@ -618,10 +683,13 @@ void Operator::run() {
                   int exponent = position;
 
                   while(!placedQuadratic && position < QuadraticTable.getLength()) {
-                    if(QuadraticTable.getEntry(index + 1).getUsername() == uname &&
-                       QuadraticTable.getEntry(index + 1).getPassword() == pword) {
+                    if(QuadraticTable.getEntry(index + 1)->getUsername() == uname &&
+                       QuadraticTable.getEntry(index + 1)->getPassword() == pword) {
                       placedQuadratic = true;
-                      QuadraticTable.replace(index + 1, User());
+                      QuadraticTable.getEntry(index + 1)->setUsername("\0");
+                      QuadraticTable.getEntry(index + 1)->setPassword("\0");
+                      //newUser = new User();
+                      //QuadraticTable.replace(index + 1, newUser);
                     } else {
                       position++;
                       exponent = position^2;
@@ -665,9 +733,9 @@ void Operator::run() {
               int index = 1;
 
               while(!linearFound && index <= LinearTable.getLength()) {
-                if(LinearTable.getEntry(index).getUsername() == uname) {
+                if(LinearTable.getEntry(index)->getUsername() == uname) {
                   linearFound = true;
-                  pword = LinearTable.getEntry(index).getPassword();
+                  pword = LinearTable.getEntry(index)->getPassword();
                 }
                 index++;
               }
@@ -682,9 +750,9 @@ void Operator::run() {
               index = 1;
 
               while(!quadraticFound && index <= LinearTable.getLength()) {
-                if(QuadraticTable.getEntry(index).getUsername() == uname) {
+                if(QuadraticTable.getEntry(index)->getUsername() == uname) {
                   quadraticFound = true;
-                  pword = QuadraticTable.getEntry(index).getPassword();
+                  pword = QuadraticTable.getEntry(index)->getPassword();
                 }
                 index++;
               }
@@ -721,9 +789,9 @@ void Operator::run() {
               int index = 1;
 
               while(!linearFound && index <= LinearTable.getLength()) {
-                if(LinearTable.getEntry(index).getPassword() == pword) {
+                if(LinearTable.getEntry(index)->getPassword() == pword) {
                   linearFound = true;
-                  uname = LinearTable.getEntry(index).getUsername();
+                  uname = LinearTable.getEntry(index)->getUsername();
                 }
                 index++;
               }
@@ -738,9 +806,9 @@ void Operator::run() {
               index = 1;
 
               while(!quadraticFound && index <= LinearTable.getLength()) {
-                if(QuadraticTable.getEntry(index).getPassword() == pword) {
+                if(QuadraticTable.getEntry(index)->getPassword() == pword) {
                   quadraticFound = true;
-                  uname = QuadraticTable.getEntry(index).getUsername();
+                  uname = QuadraticTable.getEntry(index)->getUsername();
                 }
                 index++;
               }
@@ -763,8 +831,8 @@ void Operator::run() {
           for(int i = 0; i < LinearTable.getLength(); i++) {
             cout << i << ":";
             try {
-              if (LinearTable.getEntry(i + 1).getUsername() != "\0")
-                cout << " " << LinearTable.getEntry(i + 1).getUsername() << ": " << LinearTable.getEntry(i + 1).getPassword();
+              if (LinearTable.getEntry(i + 1)->getUsername() != "\0")
+                cout << " " << LinearTable.getEntry(i + 1)->getUsername() << ": " << LinearTable.getEntry(i + 1)->getPassword();
             } catch (runtime_error) {
               cout << "\nERROR! Invalid Position!\n\n";
             }
@@ -776,8 +844,8 @@ void Operator::run() {
           for(int i = 0; i < QuadraticTable.getLength(); i++) {
             cout << i << ":";
             try {
-              if (QuadraticTable.getEntry(i + 1).getUsername() != "\0")
-                cout << " " << QuadraticTable.getEntry(i + 1).getUsername() << ": " << QuadraticTable.getEntry(i + 1).getPassword();
+              if (QuadraticTable.getEntry(i + 1)->getUsername() != "\0")
+                cout << " " << QuadraticTable.getEntry(i + 1)->getUsername() << ": " << QuadraticTable.getEntry(i + 1)->getPassword();
             } catch (runtime_error) {
               cout << "\nERROR! Invalid Position!\n\n";
             }
@@ -798,8 +866,6 @@ void Operator::run() {
       }
     }
   } while(option != 6);
-  LinearTable.~LinkedList();
-  QuadraticTable.~LinkedList();
 
   uParse = "\0";
   pParse = "\0";
@@ -809,4 +875,28 @@ void Operator::run() {
 
   cout << "\nBye Bye!\n";
   cout << "\nHave a nice day!...\n\n";
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    newUser = LinearTable.getEntry(1);
+    LinearTable.remove(1);
+    delete newUser;
+  }
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    newUser = tempLinear.getEntry(1);
+    tempLinear.remove(1);
+    delete newUser;
+  }
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    newUser = QuadraticTable.getEntry(1);
+    QuadraticTable.remove(1);
+    delete newUser;
+  }
+
+  for (int i = 1; i <= hashTableLength; i++) {
+    newUser = tempQuadratic.getEntry(1);
+    tempQuadratic.remove(1);
+    delete newUser;
+  }
 }
