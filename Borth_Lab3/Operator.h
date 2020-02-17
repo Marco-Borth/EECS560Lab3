@@ -51,6 +51,8 @@ public:
 */
   void printCommands();
 
+  void inputUsername(string parse);
+
   void parseUsername(string parse);
 
   void parsePassword(string parse);
@@ -60,6 +62,8 @@ public:
   void rehashTables();
 
   void insertRecord(string table);
+
+  void removeRecord(string table);
 
 /*
 * @pre filename is a string.

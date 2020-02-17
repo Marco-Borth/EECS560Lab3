@@ -6,3 +6,7 @@ angular, lang99
 hadoop, bgdt564
 spark, onl345
 csharp, pwd3456
+react, epq2017
+obejc, clss388
+ruby, 789sen
+sql, mysql99
